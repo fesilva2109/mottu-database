@@ -1,0 +1,10 @@
+[
+{"detection_id":"72","model_name":"Mottu Sport","placa":"DEF5678","modelo":"Mottu Sport","status":"Em manutencao","center_x":"254","center_y":"250","timestamp_deteccao":"2025-10-23T00:55:58"},
+{"detection_id":"72","model_name":"Mottu Sport","placa":"MNO7890","modelo":"Mottu Sport","status":"Reservada","center_x":"254","center_y":"250","timestamp_deteccao":"2025-10-23T00:55:58"},
+{"detection_id":"69","model_name":"Mottu Pop","placa":"ABC1234","modelo":"Mottu Pop","status":"Pronta para aluguel","center_x":"360","center_y":"269","timestamp_deteccao":"2025-10-23T00:55:47"},
+{"detection_id":"69","model_name":"Mottu Pop","placa":"JKL3456","modelo":"Mottu Pop","status":"Em quarentena","center_x":"360","center_y":"269","timestamp_deteccao":"2025-10-23T00:55:47"},
+{"detection_id":"68","model_name":"Mottu-E","placa":"GHI9012","modelo":"Mottu-E","status":"Pronta para aluguel","center_x":"377","center_y":"291","timestamp_deteccao":"2025-10-23T00:55:40"},
+{"detection_id":"54","model_name":"Mottu Pop","placa":"ABC1234","modelo":"Mottu Pop","status":"Pronta para aluguel","center_x":"305","center_y":"247","timestamp_deteccao":"2025-10-23T00:54:10"},
+{"detection_id":"54","model_name":"Mottu Pop","placa":"JKL3456","modelo":"Mottu Pop","status":"Em quarentena","center_x":"305","center_y":"247","timestamp_deteccao":"2025-10-23T00:54:10"},
+{"detection_id":"52","model_name":"Mottu-E","placa":"GHI9012","modelo":"Mottu-E","status":"Pronta para aluguel","center_x":"274","center_y":"254","timestamp_deteccao":"2025-10-23T00:54:04"}
+]
