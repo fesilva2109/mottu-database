@@ -1,4 +1,4 @@
--- INTEGRANTES: Eduardo H. S. Nagado, Gustavo R. Lazzuri, Felipe S. Maciel
+-- INTEGRANTES: Eduardo Nagado - RM558158, Gustavo Lazzuri - RM557762, Felipe Silva - RM555307
 -- PACOTE: PKG_MOTTU_OPERACOES
 ----
 
@@ -7,14 +7,11 @@ CREATE OR REPLACE PACKAGE PKG_MOTTU_OPERACOES AS
     -- Função: Converte um cursor relacional em JSON
     
     FUNCTION FNC_RELACIONAL_PARA_JSON(p_cursor IN SYS_REFCURSOR) RETURN CLOB;
-
-
     
     -- Procedure: Lista detecções em formato JSON (JOIN com MOTO)
     
     PROCEDURE PRC_LISTAR_DETECCOES_JSON;
 
-    
     -- Procedure: Relatório de custos de manutenção (manual com cursores)
     
     PROCEDURE PRC_RELATORIO_CUSTOS_MANUAL;
@@ -91,17 +88,15 @@ CREATE OR REPLACE PACKAGE BODY PKG_MOTTU_OPERACOES AS
     BEGIN
         OPEN v_cursor FOR
             SELECT
-                d.DETECTION_ID,
-                d.MODEL_NAME,
+                d.DETECCAO_ID,
+                d.TIPO_EVENTO,
                 m.PLACA,
                 m.MODELO,
                 m.STATUS,
-                d.CENTER_X,
-                d.CENTER_Y,
-                TO_CHAR(d.DETECTION_TIMESTAMP, 'YYYY-MM-DD"T"HH24:MI:SS') AS timestamp_deteccao
-            FROM DETECTIONS d
-            LEFT JOIN MOTO m ON UPPER(TRIM(d.MODEL_NAME)) = UPPER(TRIM(m.MODELO))
-            ORDER BY d.DETECTION_TIMESTAMP DESC;
+                TO_CHAR(d.TIMESTAMP_DETECCAO, 'YYYY-MM-DD"T"HH24:MI:SS') AS timestamp_deteccao
+            FROM DETECCAO d
+            JOIN MOTO m ON d.MOTO_ID = m.MOTO_ID
+            ORDER BY d.TIMESTAMP_DETECCAO DESC;
 
         v_json_result := FNC_RELACIONAL_PARA_JSON(v_cursor);
         

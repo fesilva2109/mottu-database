@@ -1,0 +1,300 @@
+-- SEÇÃO 1: DROPS e CRIAÇÃO DE TABELAS E SEQUÊNCIAS 
+
+-- Limpeza de sequences existentes para evitar conflitos
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE patio_seq';
+    DBMS_OUTPUT.PUT_LINE('Sequence PATIO_SEQ dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -2289 THEN
+            DBMS_OUTPUT.PUT_LINE('Sequence PATIO_SEQ does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE moto_seq';
+    DBMS_OUTPUT.PUT_LINE('Sequence MOTO_SEQ dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -2289 THEN
+            DBMS_OUTPUT.PUT_LINE('Sequence MOTO_SEQ does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE deteccao_seq';
+    DBMS_OUTPUT.PUT_LINE('Sequence DETECCAO_SEQ dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -2289 THEN
+            DBMS_OUTPUT.PUT_LINE('Sequence DETECCAO_SEQ does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE operador_seq';
+    DBMS_OUTPUT.PUT_LINE('Sequence OPERADOR_SEQ dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -2289 THEN
+            DBMS_OUTPUT.PUT_LINE('Sequence OPERADOR_SEQ does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE manutencao_seq';
+    DBMS_OUTPUT.PUT_LINE('Sequence MANUTENCAO_SEQ dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -2289 THEN
+            DBMS_OUTPUT.PUT_LINE('Sequence MANUTENCAO_SEQ does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+-- Remove as tabelas na ordem inversa de dependência
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE AUDITORIA CASCADE CONSTRAINTS';
+    DBMS_OUTPUT.PUT_LINE('Table AUDITORIA dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -942 THEN
+            DBMS_OUTPUT.PUT_LINE('Table AUDITORIA does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE DETECCAO CASCADE CONSTRAINTS';
+    DBMS_OUTPUT.PUT_LINE('Table DETECCAO dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -942 THEN
+            DBMS_OUTPUT.PUT_LINE('Table DETECCAO does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE MANUTENCAO CASCADE CONSTRAINTS';
+    DBMS_OUTPUT.PUT_LINE('Table MANUTENCAO dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -942 THEN
+            DBMS_OUTPUT.PUT_LINE('Table MANUTENCAO does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE OPERADOR CASCADE CONSTRAINTS';
+    DBMS_OUTPUT.PUT_LINE('Table OPERADOR dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -942 THEN
+            DBMS_OUTPUT.PUT_LINE('Table OPERADOR does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE MOTO CASCADE CONSTRAINTS';
+    DBMS_OUTPUT.PUT_LINE('Table MOTO dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -942 THEN
+            DBMS_OUTPUT.PUT_LINE('Table MOTO does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE PATIO CASCADE CONSTRAINTS';
+    DBMS_OUTPUT.PUT_LINE('Table PATIO dropped.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -942 THEN
+            DBMS_OUTPUT.PUT_LINE('Table PATIO does not exist.');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+-- =============================================================================
+-- Criação das Tabelas e Sequências
+-- =============================================================================
+
+-- Tabela PATIO: Representa os pátios de armazenamento de motocicletas
+BEGIN
+    EXECUTE IMMEDIATE 'CREATE TABLE PATIO (
+        PATIO_ID NUMBER PRIMARY KEY,
+        NOME VARCHAR2(255) NOT NULL,
+        LOCALIZACAO VARCHAR2(255) NOT NULL,
+        CAPACIDADE NUMBER(5) DEFAULT 100 NOT NULL
+    )';
+    DBMS_OUTPUT.PUT_LINE('Tabela PATIO criada.');
+EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN DBMS_OUTPUT.PUT_LINE('Tabela PATIO já existe.'); ELSE RAISE; END IF;
+END;
+/
+CREATE SEQUENCE patio_seq START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- Tabela MOTO: Registra todas as motocicletas do sistema
+BEGIN
+    EXECUTE IMMEDIATE 'CREATE TABLE MOTO (
+        MOTO_ID NUMBER PRIMARY KEY,
+        PLACA VARCHAR2(10) UNIQUE NOT NULL,
+        MODELO VARCHAR2(50) NOT NULL CHECK (MODELO IN (''Mottu Pop'', ''Mottu Sport'', ''Mottu-E'')),
+        ANO NUMBER(4) CHECK (ANO >= 2015 AND ANO <= 2050),
+        PATIO_ID NUMBER NOT NULL,
+        STATUS VARCHAR2(30) CHECK (STATUS IN (''Pronta para aluguel'', ''Em manutencao'', ''Em quarentena'', ''Alta prioridade'', ''Reservada'', ''Aguardando vistoria'')),
+        DATA_CADASTRO TIMESTAMP DEFAULT SYSTIMESTAMP,
+        CONSTRAINT FK_MOTO_PATIO FOREIGN KEY (PATIO_ID) REFERENCES PATIO(PATIO_ID)
+    )';
+    DBMS_OUTPUT.PUT_LINE('Tabela MOTO criada.');
+EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN DBMS_OUTPUT.PUT_LINE('Tabela MOTO já existe.'); ELSE RAISE; END IF;
+END;
+/
+CREATE SEQUENCE moto_seq START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- Tabela DETECCAO: Registra eventos de detecção via IoT (YOLO + OCR)
+BEGIN
+    EXECUTE IMMEDIATE 'CREATE TABLE DETECCAO (
+        DETECCAO_ID NUMBER PRIMARY KEY,
+        MOTO_ID NUMBER NOT NULL,
+        PATIO_ID NUMBER NOT NULL,
+        TIPO_EVENTO VARCHAR2(20) CHECK (TIPO_EVENTO IN (''ENTRADA'', ''SAIDA'')),
+        TIMESTAMP_DETECCAO TIMESTAMP DEFAULT SYSTIMESTAMP,
+        CONFIANCA_YOLO NUMBER(3,2) CHECK (CONFIANCA_YOLO >= 0 AND CONFIANCA_YOLO <= 1),
+        CONSTRAINT FK_DETECCAO_MOTO FOREIGN KEY (MOTO_ID) REFERENCES MOTO(MOTO_ID),
+        CONSTRAINT FK_DETECCAO_PATIO FOREIGN KEY (PATIO_ID) REFERENCES PATIO(PATIO_ID)
+    )';
+    DBMS_OUTPUT.PUT_LINE('Tabela DETECCAO criada.');
+EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN DBMS_OUTPUT.PUT_LINE('Tabela DETECCAO já existe.'); ELSE RAISE; END IF;
+END;
+/
+CREATE SEQUENCE deteccao_seq START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- Tabela OPERADOR: Funcionários que gerenciam os pátios
+BEGIN
+    EXECUTE IMMEDIATE 'CREATE TABLE OPERADOR (
+        OPERADOR_ID NUMBER PRIMARY KEY,
+        NOME VARCHAR2(255) NOT NULL,
+        EMAIL VARCHAR2(255) NOT NULL UNIQUE,
+        PASSWORD VARCHAR2(255) NOT NULL,
+        CARGO VARCHAR2(50) NOT NULL CHECK (CARGO IN (''GESTOR'', ''OPERADOR'', ''TECNICO'')),
+        PATIO_ID NUMBER NOT NULL,
+        SALARIO NUMBER(10, 2) DEFAULT 2500.00 NOT NULL,
+        DATA_ADMISSAO DATE DEFAULT SYSDATE,
+        CONSTRAINT FK_OPERADOR_PATIO FOREIGN KEY (PATIO_ID) REFERENCES PATIO(PATIO_ID)
+    )';
+    DBMS_OUTPUT.PUT_LINE('Tabela OPERADOR criada.');
+EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN DBMS_OUTPUT.PUT_LINE('Tabela OPERADOR já existe.'); ELSE RAISE; END IF;
+END;
+/
+CREATE SEQUENCE operador_seq START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- Tabela MANUTENCAO: Registra eventos de manutenção das motocicletas
+BEGIN
+    EXECUTE IMMEDIATE 'CREATE TABLE MANUTENCAO (
+        MANUTENCAO_ID NUMBER PRIMARY KEY,
+        MOTO_ID NUMBER NOT NULL,
+        OPERADOR_ID NUMBER NOT NULL,
+        TIPO_SERVICO VARCHAR2(100) NOT NULL,
+        DATA_INICIO TIMESTAMP DEFAULT SYSTIMESTAMP,
+        DATA_FIM TIMESTAMP,
+        CUSTO NUMBER(10, 2) DEFAULT 0,
+        CONSTRAINT FK_MANUTENCAO_MOTO FOREIGN KEY (MOTO_ID) REFERENCES MOTO(MOTO_ID),
+        CONSTRAINT FK_MANUTENCAO_OPERADOR FOREIGN KEY (OPERADOR_ID) REFERENCES OPERADOR(OPERADOR_ID)
+    )';
+    DBMS_OUTPUT.PUT_LINE('Tabela MANUTENCAO criada.');
+EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN DBMS_OUTPUT.PUT_LINE('Tabela MANUTENCAO já existe.'); ELSE RAISE; END IF;
+END;
+/
+CREATE SEQUENCE manutencao_seq START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- =============================================================================
+-- SEÇÃO 2: INSERÇÃO DE DADOS INICIAIS (MÍNIMO 5 REGISTROS)
+-- =============================================================================
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Inserindo dados iniciais...');
+    
+    -- Inserir 5 Pátios
+    INSERT INTO PATIO(PATIO_ID, NOME, LOCALIZACAO, CAPACIDADE) VALUES (patio_seq.NEXTVAL, 'Pátio Centro', 'Av. Paulista, 1000', 50);
+    INSERT INTO PATIO(PATIO_ID, NOME, LOCALIZACAO, CAPACIDADE) VALUES (patio_seq.NEXTVAL, 'Pátio Zona Leste', 'Rua das Flores, 250', 70);
+    INSERT INTO PATIO(PATIO_ID, NOME, LOCALIZACAO, CAPACIDADE) VALUES (patio_seq.NEXTVAL, 'Pátio Zona Oeste', 'Av. Imigrantes, 500', 60);
+    INSERT INTO PATIO(PATIO_ID, NOME, LOCALIZACAO, CAPACIDADE) VALUES (patio_seq.NEXTVAL, 'Pátio Zona Norte', 'Estrada Velha, 100', 40);
+    INSERT INTO PATIO(PATIO_ID, NOME, LOCALIZACAO, CAPACIDADE) VALUES (patio_seq.NEXTVAL, 'Pátio Zona Sul', 'Praça da Sé, 50', 55);
+    
+    -- Inserir 5 Motos com novos modelos e status
+    INSERT INTO MOTO(MOTO_ID, PLACA, MODELO, ANO, PATIO_ID, STATUS) VALUES (moto_seq.NEXTVAL, 'ABC1234', 'Mottu Pop', 2023, 1, 'Pronta para aluguel');
+    INSERT INTO MOTO(MOTO_ID, PLACA, MODELO, ANO, PATIO_ID, STATUS) VALUES (moto_seq.NEXTVAL, 'DEF5678', 'Mottu Sport', 2022, 1, 'Em manutencao');
+    INSERT INTO MOTO(MOTO_ID, PLACA, MODELO, ANO, PATIO_ID, STATUS) VALUES (moto_seq.NEXTVAL, 'GHI9012', 'Mottu-E', 2023, 2, 'Pronta para aluguel');
+    INSERT INTO MOTO(MOTO_ID, PLACA, MODELO, ANO, PATIO_ID, STATUS) VALUES (moto_seq.NEXTVAL, 'JKL3456', 'Mottu Pop', 2021, 2, 'Em quarentena');
+    INSERT INTO MOTO(MOTO_ID, PLACA, MODELO, ANO, PATIO_ID, STATUS) VALUES (moto_seq.NEXTVAL, 'MNO7890', 'Mottu Sport', 2023, 3, 'Reservada');
+    
+    -- Inserir 5 Operadores
+    INSERT INTO OPERADOR(OPERADOR_ID, NOME, EMAIL, PASSWORD, CARGO, PATIO_ID, SALARIO) 
+    VALUES (operador_seq.NEXTVAL, 'Admin Mottu', 'admin@mottu.com', 'senha123', 'GESTOR', 1, 5000.00);
+    INSERT INTO OPERADOR(OPERADOR_ID, NOME, EMAIL, PASSWORD, CARGO, PATIO_ID, SALARIO) 
+    VALUES (operador_seq.NEXTVAL, 'João Silva', 'joao@mottu.com', 'senha123', 'OPERADOR', 1, 2500.00);
+    INSERT INTO OPERADOR(OPERADOR_ID, NOME, EMAIL, PASSWORD, CARGO, PATIO_ID, SALARIO) 
+    VALUES (operador_seq.NEXTVAL, 'Maria Santos', 'maria@mottu.com', 'senha123', 'OPERADOR', 2, 2500.00);
+    INSERT INTO OPERADOR(OPERADOR_ID, NOME, EMAIL, PASSWORD, CARGO, PATIO_ID, SALARIO) 
+    VALUES (operador_seq.NEXTVAL, 'Carlos Tecnico', 'carlos@mottu.com', 'senha123', 'TECNICO', 2, 3500.00);
+    INSERT INTO OPERADOR(OPERADOR_ID, NOME, EMAIL, PASSWORD, CARGO, PATIO_ID, SALARIO) 
+    VALUES (operador_seq.NEXTVAL, 'Ana Gerente', 'ana@mottu.com', 'senha123', 'GESTOR', 3, 5000.00);
+    
+    -- Inserir 5 Detecções
+    INSERT INTO DETECCAO(DETECCAO_ID, MOTO_ID, PATIO_ID, TIPO_EVENTO, CONFIANCA_YOLO) 
+    VALUES (deteccao_seq.NEXTVAL, 1, 1, 'ENTRADA', 0.95);
+    INSERT INTO DETECCAO(DETECCAO_ID, MOTO_ID, PATIO_ID, TIPO_EVENTO, CONFIANCA_YOLO) 
+    VALUES (deteccao_seq.NEXTVAL, 2, 1, 'SAIDA', 0.92);
+    INSERT INTO DETECCAO(DETECCAO_ID, MOTO_ID, PATIO_ID, TIPO_EVENTO, CONFIANCA_YOLO) 
+    VALUES (deteccao_seq.NEXTVAL, 3, 2, 'ENTRADA', 0.88);
+    INSERT INTO DETECCAO(DETECCAO_ID, MOTO_ID, PATIO_ID, TIPO_EVENTO, CONFIANCA_YOLO) 
+    VALUES (deteccao_seq.NEXTVAL, 4, 2, 'ENTRADA', 0.90);
+    INSERT INTO DETECCAO(DETECCAO_ID, MOTO_ID, PATIO_ID, TIPO_EVENTO, CONFIANCA_YOLO) 
+    VALUES (deteccao_seq.NEXTVAL, 5, 3, 'SAIDA', 0.91);
+    
+    -- Inserir 5 Manutenções
+    INSERT INTO MANUTENCAO(MANUTENCAO_ID, MOTO_ID, OPERADOR_ID, TIPO_SERVICO, CUSTO) 
+    VALUES (manutencao_seq.NEXTVAL, 1, 4, 'Revisao de oleo', 150.00);
+    INSERT INTO MANUTENCAO(MANUTENCAO_ID, MOTO_ID, OPERADOR_ID, TIPO_SERVICO, CUSTO) 
+    VALUES (manutencao_seq.NEXTVAL, 4, 4, 'Reparo de pneu', 200.00);
+    INSERT INTO MANUTENCAO(MANUTENCAO_ID, MOTO_ID, OPERADOR_ID, TIPO_SERVICO, CUSTO) 
+    VALUES (manutencao_seq.NEXTVAL, 2, 4, 'Limpeza completa', 100.00);
+    INSERT INTO MANUTENCAO(MANUTENCAO_ID, MOTO_ID, OPERADOR_ID, TIPO_SERVICO, CUSTO) 
+    VALUES (manutencao_seq.NEXTVAL, 3, 4, 'Inspecao de seguranca', 120.00);
+    INSERT INTO MANUTENCAO(MANUTENCAO_ID, MOTO_ID, OPERADOR_ID, TIPO_SERVICO, CUSTO) 
+    VALUES (manutencao_seq.NEXTVAL, 5, 4, 'Troca de bateria', 300.00);
+    
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Carga de dados iniciais concluida.');
+END;
+/
